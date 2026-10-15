@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "activate-top-candidates": {
+      "command": "node",
+      "args": [
+        "${CURSOR_PLUGIN_ROOT}/index.js"
+      ]
+    }
+  }
+}

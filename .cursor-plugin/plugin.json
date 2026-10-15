@@ -1,0 +1,31 @@
+{
+  "name": "activate-top-candidates",
+  "displayName": "Activate Top Candidates",
+  "version": "1.0.0",
+  "description": "For recruiters and account managers: search, shortlist, and draft value-first pitches for Activate Talent's pre-vetted Top Candidates \u2014 public data only.",
+  "author": {
+    "name": "Activate Talent",
+    "url": "https://topcandidates.activatetalent.app"
+  },
+  "homepage": "https://topcandidates.activatetalent.app",
+  "repository": "https://github.com/jared502/top-candidates-mcp",
+  "license": "MIT",
+  "category": "Productivity",
+  "keywords": [
+    "recruiting",
+    "staffing",
+    "sales",
+    "mcp",
+    "activate-talent"
+  ],
+  "skills": "./skills/",
+  "mcpServers": {
+    "activate-top-candidates": {
+      "command": "node",
+      "args": [
+        "${CURSOR_PLUGIN_ROOT}/index.js"
+      ]
+    }
+  },
+  "logo": "assets/logo.svg"
+}
