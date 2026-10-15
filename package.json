@@ -1,22 +1,30 @@
 {
   "name": "@activatetalent/top-candidates-mcp",
   "version": "1.0.0",
-  "description": "Read-only MCP server for recruiters: search, shortlist, and pitch Activate Talent pre-vetted Top Candidates from Grok Bot, Cursor, or any MCP client.",
+  "description": "Read-only MCP server for recruiters and account managers: search, shortlist, and draft value-first pitches for Activate Talent's pre-vetted Top Candidates from Grok Bot, Cursor, Claude, or any MCP client. Public data only.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "test": "node test/smoke.mjs"
   },
   "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
     "recruiting",
     "staffing",
-    "mcp",
-    "activate-talent",
-    "model-context-protocol",
     "talent",
-    "sourcing"
+    "sourcing",
+    "candidates",
+    "grok-bot",
+    "cursor-plugin",
+    "activate-talent"
   ],
-  "author": "Activate Talent",
+  "author": {
+    "name": "Activate Talent",
+    "email": "jared@activatetalent.com",
+    "url": "https://activatetalent.com"
+  },
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
@@ -29,6 +37,7 @@
   "files": [
     ".cursor-plugin/",
     "LICENSE",
+    "MARKETPLACE.md",
     "README.md",
     "assets/",
     "index.js",
@@ -41,5 +50,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/jared502/top-candidates-mcp"
+  },
+  "homepage": "https://topcandidates.activatetalent.app",
+  "bugs": {
+    "email": "jared@activatetalent.com"
   }
 }

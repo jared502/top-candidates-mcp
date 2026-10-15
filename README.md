@@ -1,52 +1,95 @@
-# Activate Top Candidates MCP
+<p align="center"><img src="assets/logo.svg" width="96" height="96" alt="Activate Top Candidates logo"></p>
 
-`@activatetalent/top-candidates-mcp` — a read-only [MCP](https://modelcontextprotocol.io) server that lets recruiters search, shortlist, and pitch Activate Talent's pre-vetted Top Candidates from Grok Bot, Cursor, Claude, or any MCP client.
+# Activate Top Candidates
 
-Uses only the public search API (`/api/top-candidates/search`). No auth, no keys.
+**Search, shortlist, and pitch Activate Talent's pre-vetted Top Candidates from Grok Bot, Cursor, or Claude, without leaving your chat.**
+
+`@activatetalent/top-candidates-mcp` is a read-only [Model Context Protocol](https://modelcontextprotocol.io) server for recruiters and account managers. You describe the role and get back a ranked shortlist with profile links and a draft pitch you can review, built only from public data.
+
+## What it does
+- **Searches** Activate Talent's public Top Candidates by role, skill, or tool (Meta Ads, Klaviyo, Shopify, and more).
+- **Matches a role brief** to a ranked, deduped shortlist, with a why-fit line for each candidate.
+- **Browses 22 categories**, from Media Buyers to AI Specialists to Video Editors.
+- **Drafts value-first pitches** that lead with outcomes, never price, and never name clients.
+- **Shares profile links** for a human to open.
+
+## What it never does
+- Never sends email, Slack, or messages. Every pitch is a **draft for you to review**.
+- Never reads private data: no surnames, contact details, LinkedIn, DOB, past employers, internal notes, or pay rates.
+- Never crawls profile pages or scrapes the site.
+- Never needs credentials. No API keys, no login, no database access.
 
 ## Install
 
-**npx (any MCP client):**
+Requires Node.js ≥ 18.17. Transport: stdio. Auth: none.
+
+### Grok Bot
+Ask Grok Bot:
+> Add an MCP server named `activate-top-candidates` with command `npx -y @activatetalent/top-candidates-mcp`.
+
+Or install it from the Grok Bot plugin marketplace once the listing is live.
+
+### Cursor
+- **Plugin:** install **Activate Top Candidates** from the Cursor Marketplace. It bundles the MCP server and two skills, and runs `node ${CURSOR_PLUGIN_ROOT}/index.js`.
+- **Manual:** add to `~/.cursor/mcp.json`:
 ```json
 { "mcpServers": { "activate-top-candidates": { "command": "npx", "args": ["-y", "@activatetalent/top-candidates-mcp"] } } }
 ```
 
-**Grok Bot (AddMcpServer):** ask Grok Bot to add an MCP server named `top-candidates` with command
-`npx -y @activatetalent/top-candidates-mcp` (or locally `node /path/to/top-candidates/index.js`).
+### Claude Desktop
+Add to `claude_desktop_config.json`:
+```json
+{ "mcpServers": { "activate-top-candidates": { "command": "npx", "args": ["-y", "@activatetalent/top-candidates-mcp"] } } }
+```
 
-**Local:** `git clone … && npm install && node index.js` (stdio). Node ≥ 18.17.
+### From source
+```bash
+git clone https://github.com/jared502/top-candidates-mcp && cd top-candidates-mcp
+npm install && npm test && node index.js
+```
 
 ## Tools
 
-| Tool | What it does |
+| Tool | Purpose |
 |---|---|
-| `search_top_candidates(query, category?, maxResults?, includeRate?)` | Keyword search (≤25), optional client-side category filter. Rate hidden unless `includeRate`. |
-| `list_categories()` | 22 public category slugs, display names, browse URLs. |
-| `match_role(brief, category?, maxResults?)` | 1–3 searches from a brief, merged/deduped, ranked shortlist with title/category-based why-fit lines. |
-| `get_candidate_link(id, from?)` | Profile URL only — never fetches. |
-| `draft_candidate_pitch(name, role, roleDescription, …)` | Value-first pitch DRAFT; no client names, no price unless asked. |
-| `get_top_candidate_profile_url` | Legacy alias of `get_candidate_link`. |
+| `match_role(brief, category?, maxResults?)` | Turns a role brief into a ranked shortlist (1–3 merged searches, why-fit lines from the public title and category). **Start here.** |
+| `search_top_candidates(query, category?, maxResults?, includeRate?)` | Keyword search, up to 25 results, with an optional category filter. Rate is hidden unless explicitly requested. |
+| `list_categories()` | All 22 category slugs, names, and browse URLs. |
+| `get_candidate_link(id, from?)` | Builds a profile URL and never fetches it. |
+| `draft_candidate_pitch(name, role, roleDescription, …)` | Value-first pitch **draft**: no client names, no price unless asked. |
+| `get_top_candidate_profile_url(id, from?)` | Deprecated alias of `get_candidate_link`. |
 
-## Privacy rules
+## Bundled skills (Cursor / Grok Bot plugin)
+- **activate-sourcing-shortlists:** brief → `match_role` → refine → ranked table with links.
+- **activate-candidate-endorsements:** candidate → link → `draft_candidate_pitch` → a draft you review.
 
-- Exposes only: id, first name + last initial, role title, category, profile URL, and public billRate (only on explicit request).
-- Never exposes pay rates, full surnames, email, phone, address, LinkedIn, DOB, internal notes, past employers, or recruiter/owner.
-- Never crawls profile pages (opening one triggers an AI resume read). Search results cached in-memory for 10 min.
-- Pitches never name clients and never lead with price. Nothing is sent — drafts only.
+## Example prompts
+- "Find me 5 Meta + TikTok media buyers for a DTC skincare brand, as a table with profile links."
+- "Who does Activate have for a Shopify developer who knows Klaviyo?"
+- "List the categories, then show executive assistants."
+- "Draft a value-first pitch for the top media buyer for a performance marketing lead role."
+- "Shortlist video editors for short-form social content."
 
-## Example prompts for Grok Bot
+## Privacy & data policy
+- **Source:** only the public endpoint `https://topcandidates.activatetalent.app/api/top-candidates/search`.
+- **Fields returned:** candidate id, first name + last initial (enforced even if the API returns more), role title, category, profile URL, and public bill rate only when the user explicitly asks.
+- **Never returned:** full surname, email, phone, address, LinkedIn, DOB, past employers, internal notes, recruiter/owner, or pay rates.
+- **No crawling:** profile pages are never fetched. Opening one triggers an AI resume read, so links go to humans.
+- **Storage:** search results are cached in memory for 10 minutes and nothing is written to disk. No telemetry.
+- **Outbound:** nothing is sent anywhere. Pitches are drafts.
 
-- "Find me 5 Meta/TikTok media buyers for a DTC skincare brand."
-- "Shortlist Shopify developers and give me profile links in a table."
-- "Show executive assistants in the executive-virtual-assistants category."
-- "Draft a pitch for Victor C. for a performance marketing lead role."
-- "What categories does Activate have?"
+## Support
+Built and maintained by **[Activate Talent](https://activatetalent.com)**.
+- Product: <https://topcandidates.activatetalent.app>
+- Contact: [jared@activatetalent.com](mailto:jared@activatetalent.com)
+- Issues: <https://github.com/jared502/top-candidates-mcp/issues>
 
 ## Development
+`npm test` runs an end-to-end stdio smoke test against the live public API. It checks for field leaks, the category filter, `match_role`, links, and that pitches contain no price.
 
-`npm test` runs a stdio client smoke test against the live API.
+## License
+[MIT](LICENSE) © Activate Talent
 
 ## Changelog
-
-- **1.0.0** (2026-10-15) — Store-ready release: `list_categories`, `match_role`, `get_candidate_link`, `draft_candidate_pitch`; category filter + maxResults; name/field sanitization; rate opt-in; 10-min search cache; skills + Cursor plugin manifest.
-- **0.1.0** — Initial search + profile URL tools.
+- **1.0.0** (2026-10-15): Marketplace-ready release. Added `list_categories`, `match_role`, `get_candidate_link`, and `draft_candidate_pitch`; the category filter and `maxResults`; name and field sanitization; opt-in rate; a 10-minute search cache; the Video Editors category; better role-phrase matching; two bundled skills; the Cursor plugin manifest; and polished docs and logo.
+- **0.1.0**: Initial search and profile-URL tools.

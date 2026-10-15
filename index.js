@@ -107,7 +107,7 @@ const server = new McpServer({ name: "activate-top-candidates", version: VERSION
 
 server.registerTool("search_top_candidates", {
   title: "Search Top Candidates",
-  description: "Search Activate Talent's public, pre-vetted Top Candidates by role, skill, or tool (e.g. 'media buyer', 'Klaviyo', 'shopify developer'). Returns up to 25: first name + last initial, role, category, profile URL. Optional client-side category filter (see list_categories). Bill rate is only included when includeRate=true — only set it if the user explicitly asks for rates. Never invent candidates.",
+  description: "Search Activate Talent's pre-vetted Top Candidates by role, skill, or tool (e.g. 'media buyer', 'Klaviyo', 'shopify developer'). Returns up to 25 results with public fields only: first name + last initial, role title, category, profile URL. Use `category` (a slug from list_categories) to narrow results. Leave includeRate false unless the user explicitly asks for rates. Report only returned candidates; never invent any.",
   inputSchema: {
     query: z.string().min(1).describe("Search words: role, skill, or tool"),
     category: z.string().optional().describe("Optional category slug filter, e.g. media-buyers"),
@@ -127,8 +127,8 @@ server.registerTool("search_top_candidates", {
 });
 
 server.registerTool("list_categories", {
-  title: "List Top Candidate categories",
-  description: "List public Top Candidates category slugs, display names, and browse URLs. Use slugs as the category filter or 'from' parameter.",
+  title: "List Categories",
+  description: "List every Top Candidates category with its slug, display name, and browse URL. Call this first when you need a valid `category` filter or `from` value.",
   inputSchema: {},
 }, async () => ({
   content: [{ type: "text", text: CATEGORIES.map((c) => `- ${c.name} (${c.slug}): ${c.url}`).join("\n") }],
@@ -136,8 +136,8 @@ server.registerTool("list_categories", {
 }));
 
 server.registerTool("match_role", {
-  title: "Match a role brief to candidates",
-  description: "Give a short role brief / must-haves (e.g. 'Meta + TikTok media buyer for DTC skincare'). Runs 1–3 searches, merges and dedupes, returns a ranked shortlist with why-fit lines based ONLY on public role title + category. Does not claim experience beyond the title; recruiters should verify on the profile.",
+  title: "Match Role to Shortlist",
+  description: "Turn a role brief into a ranked shortlist. Pass a one-line brief with must-haves and no client names (e.g. 'Meta + TikTok media buyer for DTC skincare'). Runs 1–3 searches, merges and dedupes them, and returns candidates with why-fit lines based ONLY on the public role title and category. Use this first for sourcing requests; tell the recruiter to verify fit on the profile.",
   inputSchema: {
     brief: z.string().min(3).describe("Role brief or must-haves"),
     category: z.string().optional().describe("Optional category slug to restrict to"),
@@ -180,8 +180,8 @@ server.registerTool("match_role", {
 });
 
 server.registerTool("get_candidate_link", {
-  title: "Get candidate profile link",
-  description: "Build a candidate's public profile URL from id (and optional category slug). Does NOT fetch the page — opening a profile triggers an AI resume read, so share the link instead of crawling.",
+  title: "Get Candidate Link",
+  description: "Build a candidate's public profile URL from `id` and an optional category slug `from`. This never fetches the page, because opening a profile triggers an AI resume read. Share the link; do not crawl it.",
   inputSchema: { id: z.string().min(1), from: z.string().optional().describe("Optional category slug") },
 }, async ({ id, from }) => {
   const url = profileUrl(id, from);
@@ -189,8 +189,8 @@ server.registerTool("get_candidate_link", {
 });
 
 server.registerTool("draft_candidate_pitch", {
-  title: "Draft a value-first candidate pitch",
-  description: "Draft a short, value-first endorsement of a candidate for a client or account manager to REVIEW before sending. Leads with role/results language from the public title. Never names any client, never invents experience, and omits rate unless includeRate=true (only when the user explicitly asks for rate; it's placed last, never leading). This tool sends nothing.",
+  title: "Draft Candidate Pitch",
+  description: "Draft a short, value-first candidate endorsement for the sender to review. Pass a generic `roleDescription` with no client name. The draft leads with outcomes tied to the public role title and never invents experience. The rate is left out unless includeRate=true, which you set only when the user explicitly asks, and even then it goes last. Returns a DRAFT only; this tool sends nothing.",
   inputSchema: {
     name: z.string().describe("Public name (first name + last initial)"),
     role: z.string().describe("Public role title"),
@@ -226,8 +226,8 @@ server.registerTool("draft_candidate_pitch", {
 
 // Back-compat alias for existing configs
 server.registerTool("get_top_candidate_profile_url", {
-  title: "Profile URL (legacy alias)",
-  description: "Legacy alias of get_candidate_link. URL only, no fetch.",
+  title: "Get Profile URL (legacy)",
+  description: "Deprecated alias of get_candidate_link, kept for older configs. Prefer get_candidate_link. Returns the URL only and never fetches it.",
   inputSchema: { id: z.string().min(1), from: z.string().optional() },
 }, async ({ id, from }) => ({ content: [{ type: "text", text: profileUrl(id, from) }], structuredContent: { id, from: from || null, url: profileUrl(id, from) } }));
 

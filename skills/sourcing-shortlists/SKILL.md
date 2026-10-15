@@ -1,13 +1,28 @@
 ---
 name: activate-sourcing-shortlists
-description: Build candidate shortlists from Activate Talent Top Candidates for a role brief. Use when a recruiter asks to find, source, or shortlist candidates.
+description: Build ranked candidate shortlists from Activate Talent's Top Candidates for a role brief. Use when a recruiter or account manager asks to find, source, or shortlist candidates, or asks who Activate has for a role.
 ---
-# Sourcing shortlists with Activate Top Candidates
+# Sourcing shortlists
 
-1. Clarify the brief in one line (role + 2–3 must-haves). Strip client names before calling any tool.
-2. Call `match_role` with the brief. If results are thin, call `search_top_candidates` with alternate titles/tools (e.g. "performance marketer", "Klaviyo") and an optional `category` from `list_categories`.
-3. Present a ranked table: name (first + last initial), role, category, profile link, why-fit.
-4. Why-fit must come only from public title + category. Never invent years, tools, brands, or results.
-5. Do not open/crawl profile pages; share links via `get_candidate_link` (each open triggers an AI resume read).
-6. Omit rates unless the user explicitly asks; then use `includeRate: true`.
-7. Never request or show surnames, contact details, LinkedIn, DOB, past employers, internal notes, or recruiter/owner.
+## When to use
+- "Find me…", "Who do we have for…", "Shortlist…", "Source a…" for any role, skill, or tool.
+- Not for writing pitches. Use `activate-candidate-endorsements` for that.
+
+## Tool order
+1. **Brief:** restate the role in one line (title + 2–3 must-haves). Remove any client or company name.
+2. **`match_role(brief)`:** always call this first.
+3. **If you get fewer than 3 good fits:** call `list_categories`, then `search_top_candidates(query, category)` with alternate titles or tools (e.g. "performance marketer", "Klaviyo").
+4. **Links:** use the profile `url` from the results, or `get_candidate_link(id, from)`.
+5. **Present** a ranked table: Name (First L.) | Role | Category | Why fit | Profile link.
+
+## Privacy rules (always)
+- Show only the public fields: first name + last initial, role, category, profile link.
+- Never open or crawl profile pages. Each open triggers an AI resume read. Share links instead.
+- Never request or show surnames, email, phone, address, LinkedIn, DOB, past employers, internal notes, or recruiter/owner.
+- Leave rates out. Set `includeRate: true` only when the user explicitly asks for rates.
+- Why-fit lines come only from the public title and category. Never invent years, tools, brands, or results.
+
+## Communication rules
+- Never name clients in briefs, tool calls, or output meant for anyone outside Activate Talent.
+- Any outgoing message is a draft for the sender to review. Never send it yourself.
+- Lead with value and fit, never price.

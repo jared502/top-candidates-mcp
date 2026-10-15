@@ -2,10 +2,11 @@
   "name": "activate-top-candidates",
   "displayName": "Activate Top Candidates",
   "version": "1.0.0",
-  "description": "For recruiters and account managers: search, shortlist, and draft value-first pitches for Activate Talent's pre-vetted Top Candidates \u2014 public data only.",
+  "description": "Source faster from inside your AI assistant. Search, shortlist, and draft value-first pitches for Activate Talent's pre-vetted Top Candidates. Read-only, public data only, and every pitch is a draft for you to review.",
   "author": {
     "name": "Activate Talent",
-    "url": "https://topcandidates.activatetalent.app"
+    "email": "jared@activatetalent.com",
+    "url": "https://activatetalent.com"
   },
   "homepage": "https://topcandidates.activatetalent.app",
   "repository": "https://github.com/jared502/top-candidates-mcp",
@@ -14,8 +15,10 @@
   "keywords": [
     "recruiting",
     "staffing",
-    "sales",
+    "talent",
     "mcp",
+    "sourcing",
+    "sales",
     "activate-talent"
   ],
   "skills": "./skills/",
