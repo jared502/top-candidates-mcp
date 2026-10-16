@@ -1,10 +1,10 @@
-<p align="center"><img src="assets/logo.svg" width="96" height="96" alt="Activate Top Candidates logo"></p>
+<p align="center"><img src="assets/logo.png" width="96" height="96" alt="Activate Top Candidates logo"></p>
 
 # Activate Top Candidates
 
 **Search, shortlist, and pitch Activate Talent's pre-vetted Top Candidates from Grok Bot, Cursor, or Claude, without leaving your chat.**
 
-`@activatetalent/top-candidates-mcp` is a read-only [Model Context Protocol](https://modelcontextprotocol.io) server for recruiters and account managers. You describe the role and get back a ranked shortlist with profile links and a draft pitch you can review, built only from public data.
+`top-candidates-mcp` is a read-only [Model Context Protocol](https://modelcontextprotocol.io) server for recruiters and account managers. You describe the role and get back a ranked shortlist with profile links and a draft pitch you can review, built only from public data.
 
 ## What it does
 - **Searches** Activate Talent's public Top Candidates by role, skill, or tool (Meta Ads, Klaviyo, Shopify, and more).
@@ -21,25 +21,31 @@
 
 ## Install
 
-Requires Node.js ≥ 18.17. Transport: stdio. Auth: none.
+Requires Node.js ≥ 18.17 and git. Transport: stdio. Auth: none. No build step: npx installs straight from GitHub.
+
+```bash
+npx -y github:jared502/top-candidates-mcp
+```
+
+_npm package `@activatetalent/top-candidates-mcp`: coming soon._
 
 ### Grok Bot
 Ask Grok Bot:
-> Add an MCP server named `activate-top-candidates` with command `npx -y @activatetalent/top-candidates-mcp`.
+> Add an MCP server named `activate-top-candidates` with command `npx -y github:jared502/top-candidates-mcp`.
 
 Or install it from the Grok Bot plugin marketplace once the listing is live.
 
 ### Cursor
-- **Plugin:** install **Activate Top Candidates** from the Cursor Marketplace. It bundles the MCP server and two skills, and runs `node ${CURSOR_PLUGIN_ROOT}/index.js`.
+- **Plugin:** install **Activate Top Candidates** from the Cursor Marketplace. It bundles the MCP server and two skills, and runs `npx -y github:jared502/top-candidates-mcp`.
 - **Manual:** add to `~/.cursor/mcp.json`:
 ```json
-{ "mcpServers": { "activate-top-candidates": { "command": "npx", "args": ["-y", "@activatetalent/top-candidates-mcp"] } } }
+{ "mcpServers": { "activate-top-candidates": { "command": "npx", "args": ["-y", "github:jared502/top-candidates-mcp"] } } }
 ```
 
 ### Claude Desktop
 Add to `claude_desktop_config.json`:
 ```json
-{ "mcpServers": { "activate-top-candidates": { "command": "npx", "args": ["-y", "@activatetalent/top-candidates-mcp"] } } }
+{ "mcpServers": { "activate-top-candidates": { "command": "npx", "args": ["-y", "github:jared502/top-candidates-mcp"] } } }
 ```
 
 ### From source
@@ -56,7 +62,7 @@ npm install && npm test && node index.js
 | `search_top_candidates(query, category?, maxResults?)` | Keyword search, up to 25 results, with an optional category filter. Never returns rates. |
 | `list_categories()` | All 22 category slugs, names, and browse URLs. |
 | `get_candidate_link(id, from?)` | Builds a profile URL and never fetches it. |
-| `draft_candidate_pitch(name, role, roleDescription, …)` | Value-first pitch **draft**: no client names, no price unless asked. |
+| `draft_candidate_pitch(name, role, roleDescription, …)` | Value-first pitch **draft**: no client names, never includes rates. |
 | `get_top_candidate_profile_url(id, from?)` | Deprecated alias of `get_candidate_link`. |
 
 ## Bundled skills (Cursor / Grok Bot plugin)

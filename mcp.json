@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "activate-top-candidates": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "${CURSOR_PLUGIN_ROOT}/index.js"
+        "-y",
+        "github:jared502/top-candidates-mcp"
       ]
     }
   }
