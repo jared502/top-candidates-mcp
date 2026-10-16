@@ -2,7 +2,9 @@
 /**
  * @activatetalent/top-candidates-mcp — read-only MCP for Activate Talent Top Candidates.
  * Uses ONLY the public search API. No auth, no DB/Clerk keys, no profile crawling.
- * Exposes public fields only: id, first name + last initial, role, billRate, category.
+ * Exposes public fields only: id, first name + last initial, role, category, profile URL.
+ * NEVER returns pay rates, bill rates, full surnames, emails, phones, addresses, LinkedIn,
+ * DOB, internal notes, past employers, or recruiter info, even if the API sends them.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -44,13 +46,14 @@ const CAT_NAME = Object.fromEntries(CATEGORIES.map((c) => [c.slug, c.name]));
 const profileUrl = (id, from) =>
   `${BASE}/top-candidates/${encodeURIComponent(id)}${from ? `?from=${encodeURIComponent(from)}` : ""}`;
 
-/** Whitelist public fields; enforce "First L." even if API ever returns more. */
+/** Whitelist public fields; enforce "First L." even if API ever returns more.
+ *  Rates (pay/bill) and all other private fields are dropped here and never re-added. */
 function sanitize(r) {
   const parts = String(r.name || "").trim().split(/\s+/).filter(Boolean);
   const name = parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.` : parts[0] || "Candidate";
   const from = r.from || null;
   return {
-    id: String(r.id), name, role: String(r.role || "").trim(), billRate: r.billRate || null,
+    id: String(r.id), name, role: String(r.role || "").trim(),
     from, category: from ? CAT_NAME[from] || from : null, url: profileUrl(r.id, from),
   };
 }
@@ -70,11 +73,10 @@ async function search(q) {
   return v;
 }
 
-const line = (c, i, rate) =>
-  `${i + 1}. ${c.name} — ${c.role}${c.category ? ` (${c.category})` : ""}${rate && c.billRate ? ` · ${c.billRate}` : ""}\n   ${c.url}`;
+const line = (c, i) =>
+  `${i + 1}. ${c.name} — ${c.role}${c.category ? ` (${c.category})` : ""}\n   ${c.url}`;
 const err = (e) => ({ content: [{ type: "text", text: `Error: ${e.message}` }], isError: true });
-const publicOnly = ({ id, name, role, from, category, url, billRate }, rate) =>
-  rate ? { id, name, role, from, category, url, billRate } : { id, name, role, from, category, url };
+const publicOnly = ({ id, name, role, from, category, url }) => ({ id, name, role, from, category, url });
 
 const STOP = new Set("a an and the for with of to in on at or who need needs needed looking someone must have has experience exp years year strong plus nice remote full time part role hire hiring candidate candidates we our is are be can will brand brands dtc ecommerce e-commerce company team their this that".split(" "));
 const ROLE_PHRASES = [
@@ -107,22 +109,21 @@ const server = new McpServer({ name: "activate-top-candidates", version: VERSION
 
 server.registerTool("search_top_candidates", {
   title: "Search Top Candidates",
-  description: "Search Activate Talent's pre-vetted Top Candidates by role, skill, or tool (e.g. 'media buyer', 'Klaviyo', 'shopify developer'). Returns up to 25 results with public fields only: first name + last initial, role title, category, profile URL. Use `category` (a slug from list_categories) to narrow results. Leave includeRate false unless the user explicitly asks for rates. Report only returned candidates; never invent any.",
+  description: "Search Activate Talent's pre-vetted Top Candidates by role, skill, or tool (e.g. 'media buyer', 'Klaviyo', 'shopify developer'). Returns up to 25 results with public fields only: first name + last initial, role title, category, profile URL. Use `category` (a slug from list_categories) to narrow results. Report only returned candidates; never invent any.",
   inputSchema: {
     query: z.string().min(1).describe("Search words: role, skill, or tool"),
     category: z.string().optional().describe("Optional category slug filter, e.g. media-buyers"),
     maxResults: z.number().int().min(1).max(MAX).optional().describe("1–25, default 25"),
-    includeRate: z.boolean().optional().describe("Include public billRate. Only when the user explicitly asks for rates."),
   },
-}, async ({ query, category, maxResults = MAX, includeRate = false }) => {
+}, async ({ query, category, maxResults = MAX }) => {
   try {
     let r = await search(query);
     if (category) r = r.filter((c) => c.from === category);
     r = r.slice(0, maxResults);
     const text = r.length
-      ? `Top Candidates for "${query.trim()}"${category ? ` in ${CAT_NAME[category] || category}` : ""} (${r.length}):\n\n${r.map((c, i) => line(c, i, includeRate)).join("\n")}`
+      ? `Top Candidates for "${query.trim()}"${category ? ` in ${CAT_NAME[category] || category}` : ""} (${r.length}):\n\n${r.map((c, i) => line(c, i)).join("\n")}`
       : `No matching candidates for "${query.trim()}"${category ? ` in ${category}` : ""}. Try broader words or browse list_categories.`;
-    return { content: [{ type: "text", text }], structuredContent: { query: query.trim(), category: category || null, count: r.length, results: r.map((c) => publicOnly(c, includeRate)) } };
+    return { content: [{ type: "text", text }], structuredContent: { query: query.trim(), category: category || null, count: r.length, results: r.map((c) => publicOnly(c)) } };
   } catch (e) { return err(e); }
 });
 
@@ -173,9 +174,9 @@ server.registerTool("match_role", {
       ? `Role title/category matches: ${x.matched.join(", ")} — "${x.c.role}"${x.c.category ? ` in ${x.c.category}` : ""}.`
       : `Surfaced by search "${x.qs[0]}"; title "${x.c.role}" — verify fit on profile.`;
     const text = list.length
-      ? `Shortlist for: "${brief}"\nSearches run: ${queries.map((q) => `"${q}"`).join(", ")}\n\n${list.map((x, i) => `${line(x.c, i, false)}\n   Why: ${why(x)}`).join("\n")}\n\nFit notes use only public title + category. Open profiles to verify experience.`
+      ? `Shortlist for: "${brief}"\nSearches run: ${queries.map((q) => `"${q}"`).join(", ")}\n\n${list.map((x, i) => `${line(x.c, i)}\n   Why: ${why(x)}`).join("\n")}\n\nFit notes use only public title + category. Open profiles to verify experience.`
       : `No matches for "${brief}" (searches: ${queries.join(", ")}). Try different keywords.`;
-    return { content: [{ type: "text", text }], structuredContent: { brief, queries, count: list.length, shortlist: list.map((x) => ({ ...publicOnly(x.c, false), why: why(x), score: Math.round(x.score * 10) / 10 })) } };
+    return { content: [{ type: "text", text }], structuredContent: { brief, queries, count: list.length, shortlist: list.map((x) => ({ ...publicOnly(x.c), why: why(x), score: Math.round(x.score * 10) / 10 })) } };
   } catch (e) { return err(e); }
 });
 
@@ -190,7 +191,7 @@ server.registerTool("get_candidate_link", {
 
 server.registerTool("draft_candidate_pitch", {
   title: "Draft Candidate Pitch",
-  description: "Draft a short, value-first candidate endorsement for the sender to review. Pass a generic `roleDescription` with no client name. The draft leads with outcomes tied to the public role title and never invents experience. The rate is left out unless includeRate=true, which you set only when the user explicitly asks, and even then it goes last. Returns a DRAFT only; this tool sends nothing.",
+  description: "Draft a short, value-first candidate endorsement for the sender to review. Pass a generic `roleDescription` with no client name. The draft leads with outcomes tied to the public role title and never invents experience. It never includes pay or bill rates. Returns a DRAFT only; this tool sends nothing.",
   inputSchema: {
     name: z.string().describe("Public name (first name + last initial)"),
     role: z.string().describe("Public role title"),
@@ -198,10 +199,8 @@ server.registerTool("draft_candidate_pitch", {
     id: z.string().optional(),
     url: z.string().optional(),
     roleDescription: z.string().describe("Generic role description (no client names)"),
-    billRate: z.string().optional(),
-    includeRate: z.boolean().optional().describe("Only true if the user explicitly asked for rate"),
   },
-}, async ({ name, role, category, id, url, roleDescription, billRate, includeRate = false }) => {
+}, async ({ name, role, category, id, url, roleDescription }) => {
   const first = sanitize({ id: id || "x", name }).name;
   const catName = category ? CAT_NAME[category] || category : null;
   const link = url || (id ? profileUrl(id, category && CAT_NAME[category] ? category : undefined) : null);
@@ -218,10 +217,9 @@ server.registerTool("draft_candidate_pitch", {
     "",
     "Want me to set up a quick intro call this week?",
   ].filter((l) => l !== null);
-  if (includeRate && billRate) lines.push("", `Investment (as requested): ${billRate}.`);
   lines.push("", "Best,", "[Your name]");
   const text = `DRAFT — review before sending. Add verified results from the profile/interview; do not add claims you haven't confirmed.\n\n${lines.join("\n")}`;
-  return { content: [{ type: "text", text }], structuredContent: { draft: lines.join("\n"), includesRate: !!(includeRate && billRate) } };
+  return { content: [{ type: "text", text }], structuredContent: { draft: lines.join("\n") } };
 });
 
 // Back-compat alias for existing configs

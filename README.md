@@ -53,7 +53,7 @@ npm install && npm test && node index.js
 | Tool | Purpose |
 |---|---|
 | `match_role(brief, category?, maxResults?)` | Turns a role brief into a ranked shortlist (1–3 merged searches, why-fit lines from the public title and category). **Start here.** |
-| `search_top_candidates(query, category?, maxResults?, includeRate?)` | Keyword search, up to 25 results, with an optional category filter. Rate is hidden unless explicitly requested. |
+| `search_top_candidates(query, category?, maxResults?)` | Keyword search, up to 25 results, with an optional category filter. Never returns rates. |
 | `list_categories()` | All 22 category slugs, names, and browse URLs. |
 | `get_candidate_link(id, from?)` | Builds a profile URL and never fetches it. |
 | `draft_candidate_pitch(name, role, roleDescription, …)` | Value-first pitch **draft**: no client names, no price unless asked. |
@@ -72,8 +72,8 @@ npm install && npm test && node index.js
 
 ## Privacy & data policy
 - **Source:** only the public endpoint `https://topcandidates.activatetalent.app/api/top-candidates/search`.
-- **Fields returned:** candidate id, first name + last initial (enforced even if the API returns more), role title, category, profile URL, and public bill rate only when the user explicitly asks.
-- **Never returned:** full surname, email, phone, address, LinkedIn, DOB, past employers, internal notes, recruiter/owner, or pay rates.
+- **Fields returned:** candidate id, first name + last initial (enforced even if the API returns more), role title, category, profile URL. Nothing else.
+- **Never returned:** full surname, email, phone, address, LinkedIn, DOB, past employers, internal notes, recruiter/owner, pay rates, or bill rates (stripped from every tool output).
 - **No crawling:** profile pages are never fetched. Opening one triggers an AI resume read, so links go to humans.
 - **Storage:** search results are cached in memory for 10 minutes and nothing is written to disk. No telemetry.
 - **Outbound:** nothing is sent anywhere. Pitches are drafts.
@@ -91,5 +91,5 @@ Built and maintained by **[Activate Talent](https://activatetalent.com)**.
 [MIT](LICENSE) © Activate Talent
 
 ## Changelog
-- **1.0.0** (2026-10-15): Marketplace-ready release. Added `list_categories`, `match_role`, `get_candidate_link`, and `draft_candidate_pitch`; the category filter and `maxResults`; name and field sanitization; opt-in rate; a 10-minute search cache; the Video Editors category; better role-phrase matching; two bundled skills; the Cursor plugin manifest; and polished docs and logo.
+- **1.0.0** (2026-10-15): Marketplace-ready release. Added `list_categories`, `match_role`, `get_candidate_link`, and `draft_candidate_pitch`; the category filter and `maxResults`; name and field sanitization; a 10-minute search cache; the Video Editors category; better role-phrase matching; two bundled skills; the Cursor plugin manifest; and polished docs and logo.
 - **0.1.0**: Initial search and profile-URL tools.

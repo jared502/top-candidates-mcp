@@ -19,7 +19,7 @@ description: Build ranked candidate shortlists from Activate Talent's Top Candid
 - Show only the public fields: first name + last initial, role, category, profile link.
 - Never open or crawl profile pages. Each open triggers an AI resume read. Share links instead.
 - Never request or show surnames, email, phone, address, LinkedIn, DOB, past employers, internal notes, or recruiter/owner.
-- Leave rates out. Set `includeRate: true` only when the user explicitly asks for rates.
+- Leave rates out. The tools never return pay or bill rates.
 - Why-fit lines come only from the public title and category. Never invent years, tools, brands, or results.
 
 ## Communication rules

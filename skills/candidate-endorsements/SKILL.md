@@ -18,6 +18,6 @@ description: Draft value-first candidate endorsements and intros from Activate T
 ## Hard rules
 - **Draft before sending:** never send email, Slack, SMS, or any other message yourself.
 - **Never name clients**, past or current, in the pitch or the tool arguments.
-- **Never lead with price.** Lead with value and outcomes. Include the rate only if the user explicitly asks (`includeRate: true`), and put it last.
+- **Never lead with price.** Lead with value and outcomes. The tools never return or include pay or bill rates; rates are discussed directly by the recruiter.
 - **Privacy:** public fields only (First L., role, category, link). No surnames, contact details, LinkedIn, DOB, past employers, or internal notes. Never crawl profile pages.
 - **No fabrication:** claim nothing beyond the public role title and what the user verified.
